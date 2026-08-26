@@ -14,7 +14,184 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      databases: {
+        Row: {
+          created_at: string
+          edition: string | null
+          id: string
+          instance_name: string
+          oracle_version: string
+          owner_id: string | null
+          patch_level: string | null
+          server_id: string
+          sid: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          edition?: string | null
+          id?: string
+          instance_name: string
+          oracle_version: string
+          owner_id?: string | null
+          patch_level?: string | null
+          server_id: string
+          sid?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          edition?: string | null
+          id?: string
+          instance_name?: string
+          oracle_version?: string
+          owner_id?: string | null
+          patch_level?: string | null
+          server_id?: string
+          sid?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "databases_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "databases_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owners: {
+        Row: {
+          id: string
+          name: string
+          team: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          team?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          team?: string | null
+        }
+        Relationships: []
+      }
+      scan_log: {
+        Row: {
+          id: string
+          method: string
+          notes: string | null
+          scanned_at: string
+          server_id: string
+          success: boolean
+        }
+        Insert: {
+          id?: string
+          method?: string
+          notes?: string | null
+          scanned_at?: string
+          server_id: string
+          success?: boolean
+        }
+        Update: {
+          id?: string
+          method?: string
+          notes?: string | null
+          scanned_at?: string
+          server_id?: string
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_log_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servers: {
+        Row: {
+          created_at: string
+          datacenter: string | null
+          environment: string
+          hostname: string
+          id: string
+          ip_address: string | null
+          os_family: string
+          os_version: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          datacenter?: string | null
+          environment: string
+          hostname: string
+          id?: string
+          ip_address?: string | null
+          os_family: string
+          os_version?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          datacenter?: string | null
+          environment?: string
+          hostname?: string
+          id?: string
+          ip_address?: string | null
+          os_family?: string
+          os_version?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      version_history: {
+        Row: {
+          changed_on: string
+          database_id: string
+          id: string
+          new_version: string
+          old_version: string | null
+        }
+        Insert: {
+          changed_on?: string
+          database_id: string
+          id?: string
+          new_version: string
+          old_version?: string | null
+        }
+        Update: {
+          changed_on?: string
+          database_id?: string
+          id?: string
+          new_version?: string
+          old_version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "version_history_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
