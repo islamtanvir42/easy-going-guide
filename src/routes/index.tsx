@@ -14,13 +14,11 @@ import {
 } from "@/components/ui/select";
 import {
   SCAN_OVERDUE_DAYS,
-  fetchDatabases,
-  fetchScanLog,
-  fetchServers,
   formatDateTime,
   isEndOfLife,
   majorVersionLabel,
 } from "@/lib/inventory";
+import { getDatabases, getScanLog, getServers } from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -72,9 +70,9 @@ function SummaryCard({
 }
 
 function Overview() {
-  const databases = useQuery({ queryKey: ["databases"], queryFn: fetchDatabases });
-  const servers = useQuery({ queryKey: ["servers"], queryFn: fetchServers });
-  const scans = useQuery({ queryKey: ["scan_log"], queryFn: fetchScanLog });
+  const databases = useQuery({ queryKey: ["databases"], queryFn: () => getDatabases() });
+  const servers = useQuery({ queryKey: ["servers"], queryFn: () => getServers() });
+  const scans = useQuery({ queryKey: ["scan_log"], queryFn: () => getScanLog() });
 
   const [search, setSearch] = useState("");
   const [environment, setEnvironment] = useState("all");

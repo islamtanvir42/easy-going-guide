@@ -3,13 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { StatusBadge, environmentTone } from "@/components/inventory/StatusBadge";
 import {
-  fetchDatabase,
-  fetchScanLogForServer,
-  fetchVersionHistory,
   formatDate,
   formatDateTime,
   isEndOfLife,
 } from "@/lib/inventory";
+import { getDatabase, getScanLogForServer, getVersionHistory } from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/databases/$id")({
@@ -42,15 +40,15 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
 
 function DatabaseDetail() {
   const { id } = Route.useParams();
-  const db = useQuery({ queryKey: ["database", id], queryFn: () => fetchDatabase(id) });
+  const db = useQuery({ queryKey: ["database", id], queryFn: () => getDatabase({ data: { id } }) });
   const history = useQuery({
     queryKey: ["version_history", id],
-    queryFn: () => fetchVersionHistory(id),
+    queryFn: () => getVersionHistory({ data: { id } }),
   });
   const serverId = db.data?.server_id;
   const scans = useQuery({
     queryKey: ["scan_log", serverId],
-    queryFn: () => fetchScanLogForServer(serverId!),
+    queryFn: () => getScanLogForServer({ data: { id: serverId! } }),
     enabled: Boolean(serverId),
   });
 
