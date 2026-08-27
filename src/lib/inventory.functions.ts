@@ -60,3 +60,15 @@ export const getVersionHistory = createServerFn({ method: "GET" })
       `version_history?select=*&database_id=eq.${encodeURIComponent(data.id)}&order=changed_on.desc`,
     ),
   );
+
+export const getLatestMetrics = createServerFn({ method: "GET" }).handler(async () =>
+  rest<ResourceMetricRow[]>("resource_metrics?select=*&order=recorded_at.desc"),
+);
+
+export const getMetricsForDatabase = createServerFn({ method: "GET" })
+  .inputValidator(idSchema)
+  .handler(async ({ data }) =>
+    rest<ResourceMetricRow[]>(
+      `resource_metrics?select=*&database_id=eq.${encodeURIComponent(data.id)}&order=recorded_at.asc`,
+    ),
+  );
