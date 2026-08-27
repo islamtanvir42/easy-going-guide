@@ -89,6 +89,53 @@ export type Database = {
         }
         Relationships: []
       }
+      resource_metrics: {
+        Row: {
+          cpu_cores: number
+          cpu_usage_percent: number
+          database_id: string
+          id: string
+          ram_allocated_gb: number
+          ram_used_gb: number
+          recorded_at: string
+          storage_allocated_gb: number
+          storage_used_gb: number
+          tablespace_used_percent: number
+        }
+        Insert: {
+          cpu_cores: number
+          cpu_usage_percent: number
+          database_id: string
+          id?: string
+          ram_allocated_gb: number
+          ram_used_gb: number
+          recorded_at?: string
+          storage_allocated_gb: number
+          storage_used_gb: number
+          tablespace_used_percent: number
+        }
+        Update: {
+          cpu_cores?: number
+          cpu_usage_percent?: number
+          database_id?: string
+          id?: string
+          ram_allocated_gb?: number
+          ram_used_gb?: number
+          recorded_at?: string
+          storage_allocated_gb?: number
+          storage_used_gb?: number
+          tablespace_used_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_metrics_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scan_log: {
         Row: {
           id: string

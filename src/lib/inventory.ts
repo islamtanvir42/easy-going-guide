@@ -74,3 +74,37 @@ export function formatDate(value: string | null | undefined) {
     day: "2-digit",
   });
 }
+
+export type ResourceMetricRow = {
+  id: string;
+  database_id: string;
+  recorded_at: string;
+  ram_allocated_gb: number;
+  ram_used_gb: number;
+  cpu_cores: number;
+  cpu_usage_percent: number;
+  storage_allocated_gb: number;
+  storage_used_gb: number;
+  tablespace_used_percent: number;
+};
+
+/** Usage above this percentage is considered over capacity. */
+export const OVER_CAPACITY_PERCENT = 85;
+
+export function usagePercent(used: number, allocated: number) {
+  if (!allocated) return 0;
+  return (Number(used) / Number(allocated)) * 100;
+}
+
+export function isOverCapacity(used: number, allocated: number) {
+  return usagePercent(used, allocated) > OVER_CAPACITY_PERCENT;
+}
+
+/** Most recent metric row per database (input must be ordered recorded_at desc). */
+export function latestByDatabase(rows: ResourceMetricRow[]) {
+  const map = new Map<string, ResourceMetricRow>();
+  rows.forEach((r) => {
+    if (!map.has(r.database_id)) map.set(r.database_id, r);
+  });
+  return map;
+}
