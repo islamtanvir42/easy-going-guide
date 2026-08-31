@@ -267,31 +267,24 @@ function Overview() {
                   <th className="px-4 py-2 font-medium">OS family</th>
                   <th className="px-4 py-2 font-medium">Environment</th>
                   <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium">RAM used / alloc</th>
-                  <th className="px-4 py-2 font-medium">Storage used / alloc</th>
                 </tr>
               </thead>
               <tbody>
                 {databases.isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                       Loading inventory…
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                       No databases match these filters.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((r) => {
                     const eol = isEndOfLife(r.oracle_version);
-                    const m = latest.get(r.id);
-                    const ramOver = m ? isOverCapacity(m.ram_used_gb, m.ram_allocated_gb) : false;
-                    const storageOver = m
-                      ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb)
-                      : false;
                     return (
                       <tr
                         key={r.id}
@@ -336,20 +329,6 @@ function Overview() {
                           <StatusBadge tone={r.status === "active" ? "success" : "neutral"}>
                             {r.status}
                           </StatusBadge>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span className={cn("tech text-xs", ramOver && "font-medium text-destructive")}>
-                            {m ? `${Number(m.ram_used_gb)} / ${Number(m.ram_allocated_gb)} GB` : "—"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span
-                            className={cn("tech text-xs", storageOver && "font-medium text-destructive")}
-                          >
-                            {m
-                              ? `${Number(m.storage_used_gb)} / ${Number(m.storage_allocated_gb)} GB (${usagePercent(m.storage_used_gb, m.storage_allocated_gb).toFixed(0)}%)`
-                              : "—"}
-                          </span>
                         </td>
                       </tr>
                     );
