@@ -18,7 +18,6 @@ import {
   isOverCapacity,
   latestByDatabase,
   majorVersionLabel,
-  usagePercent,
 } from "@/lib/inventory";
 import {
   getDatabases,
