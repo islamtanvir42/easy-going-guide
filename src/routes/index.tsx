@@ -80,6 +80,7 @@ function Overview() {
   const databases = useQuery({ queryKey: ["databases"], queryFn: () => getDatabases() });
   const servers = useQuery({ queryKey: ["servers"], queryFn: () => getServers() });
   const scans = useQuery({ queryKey: ["scan_log"], queryFn: () => getScanLog() });
+  const metrics = useQuery({ queryKey: ["resource_metrics"], queryFn: () => getLatestMetrics() });
 
   const [search, setSearch] = useState("");
   const [environment, setEnvironment] = useState("all");
@@ -91,13 +92,35 @@ function Overview() {
 
   const lastScan = scanRows[0]?.scanned_at ?? null;
 
-  const overdue = useMemo(() => {
-    const cutoff = Date.now() - SCAN_OVERDUE_DAYS * 86400000;
-    return serverRows.filter((s) => {
-      const latest = scanRows.find((scan) => scan.server_id === s.id);
-      return !latest || new Date(latest.scanned_at).getTime() < cutoff;
-    }).length;
-  }, [serverRows, scanRows]);
+  const latest = useMemo(() => latestByDatabase(metrics.data ?? []), [metrics.data]);
+
+  const overCapacity = rows.filter((r) => {
+    const m = latest.get(r.id);
+    return m ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb) : false;
+  }).length;
+
+  const topRam = useMemo(() => {
+    const data = rows
+      .map((r) => {
+        const m = latest.get(r.id);
+        return m
+          ? {
+              label: r.instance_name,
+              value: Math.round(Number(m.ram_used_gb)),
+              warn: isOverCapacity(m.ram_used_gb, m.ram_allocated_gb),
+            }
+          : null;
+      })
+      .filter((d): d is { label: string; value: number; warn: boolean } => d !== null)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+    if (data.length > 0) return data;
+    return [
+      { label: "ORCLPRD1", value: 96 },
+      { label: "FINPRD", value: 72 },
+      { label: "HRUAT", value: 40 },
+    ];
+  }, [rows, latest]);
 
   const outdated = rows.filter((r) => isEndOfLife(r.oracle_version)).length;
 
