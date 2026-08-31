@@ -203,20 +203,25 @@ function Overview() {
             tone="warning"
           />
           <SummaryCard
-            label="Scans overdue"
-            value={overdue}
-            hint={`No scan in ${SCAN_OVERDUE_DAYS} days`}
+            label="Over 85% storage"
+            value={overCapacity}
+            hint="Databases near storage capacity"
             tone="danger"
           />
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-3">
           <BarPanel
             title="Databases by Oracle version"
             subtitle="Amber marks end-of-life releases"
             data={byVersion}
           />
           <BarPanel title="Databases by OS family" subtitle="Host operating system" data={byOs} />
+          <BarPanel
+            title="Top databases by RAM usage"
+            subtitle="GB used at latest scan"
+            data={topRam}
+          />
         </div>
 
         <section className="rounded-lg border bg-card">
