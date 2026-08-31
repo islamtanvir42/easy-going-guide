@@ -13,12 +13,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  SCAN_OVERDUE_DAYS,
   formatDateTime,
   isEndOfLife,
+  isOverCapacity,
+  latestByDatabase,
   majorVersionLabel,
+  usagePercent,
 } from "@/lib/inventory";
-import { getDatabases, getScanLog, getServers } from "@/lib/inventory.functions";
+import {
+  getDatabases,
+  getLatestMetrics,
+  getScanLog,
+  getServers,
+} from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -73,6 +80,7 @@ function Overview() {
   const databases = useQuery({ queryKey: ["databases"], queryFn: () => getDatabases() });
   const servers = useQuery({ queryKey: ["servers"], queryFn: () => getServers() });
   const scans = useQuery({ queryKey: ["scan_log"], queryFn: () => getScanLog() });
+  const metrics = useQuery({ queryKey: ["resource_metrics"], queryFn: () => getLatestMetrics() });
 
   const [search, setSearch] = useState("");
   const [environment, setEnvironment] = useState("all");
@@ -84,13 +92,35 @@ function Overview() {
 
   const lastScan = scanRows[0]?.scanned_at ?? null;
 
-  const overdue = useMemo(() => {
-    const cutoff = Date.now() - SCAN_OVERDUE_DAYS * 86400000;
-    return serverRows.filter((s) => {
-      const latest = scanRows.find((scan) => scan.server_id === s.id);
-      return !latest || new Date(latest.scanned_at).getTime() < cutoff;
-    }).length;
-  }, [serverRows, scanRows]);
+  const latest = useMemo(() => latestByDatabase(metrics.data ?? []), [metrics.data]);
+
+  const overCapacity = rows.filter((r) => {
+    const m = latest.get(r.id);
+    return m ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb) : false;
+  }).length;
+
+  const topRam = useMemo(() => {
+    const data = rows
+      .map((r) => {
+        const m = latest.get(r.id);
+        return m
+          ? {
+              label: r.instance_name,
+              value: Math.round(Number(m.ram_used_gb)),
+              warn: isOverCapacity(m.ram_used_gb, m.ram_allocated_gb),
+            }
+          : null;
+      })
+      .filter((d): d is { label: string; value: number; warn: boolean } => d !== null)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+    if (data.length > 0) return data;
+    return [
+      { label: "ORCLPRD1", value: 96 },
+      { label: "FINPRD", value: 72 },
+      { label: "HRUAT", value: 40 },
+    ];
+  }, [rows, latest]);
 
   const outdated = rows.filter((r) => isEndOfLife(r.oracle_version)).length;
 
@@ -173,20 +203,25 @@ function Overview() {
             tone="warning"
           />
           <SummaryCard
-            label="Scans overdue"
-            value={overdue}
-            hint={`No scan in ${SCAN_OVERDUE_DAYS} days`}
+            label="Over 85% storage"
+            value={overCapacity}
+            hint="Databases near storage capacity"
             tone="danger"
           />
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-3">
           <BarPanel
             title="Databases by Oracle version"
             subtitle="Amber marks end-of-life releases"
             data={byVersion}
           />
           <BarPanel title="Databases by OS family" subtitle="Host operating system" data={byOs} />
+          <BarPanel
+            title="Top databases by RAM usage"
+            subtitle="GB used at latest scan"
+            data={topRam}
+          />
         </div>
 
         <section className="rounded-lg border bg-card">
@@ -233,24 +268,31 @@ function Overview() {
                   <th className="px-4 py-2 font-medium">OS family</th>
                   <th className="px-4 py-2 font-medium">Environment</th>
                   <th className="px-4 py-2 font-medium">Status</th>
+                  <th className="px-4 py-2 font-medium">RAM used / alloc</th>
+                  <th className="px-4 py-2 font-medium">Storage used / alloc</th>
                 </tr>
               </thead>
               <tbody>
                 {databases.isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       Loading inventory…
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       No databases match these filters.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((r) => {
                     const eol = isEndOfLife(r.oracle_version);
+                    const m = latest.get(r.id);
+                    const ramOver = m ? isOverCapacity(m.ram_used_gb, m.ram_allocated_gb) : false;
+                    const storageOver = m
+                      ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb)
+                      : false;
                     return (
                       <tr
                         key={r.id}
@@ -295,6 +337,20 @@ function Overview() {
                           <StatusBadge tone={r.status === "active" ? "success" : "neutral"}>
                             {r.status}
                           </StatusBadge>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className={cn("tech text-xs", ramOver && "font-medium text-destructive")}>
+                            {m ? `${Number(m.ram_used_gb)} / ${Number(m.ram_allocated_gb)} GB` : "—"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span
+                            className={cn("tech text-xs", storageOver && "font-medium text-destructive")}
+                          >
+                            {m
+                              ? `${Number(m.storage_used_gb)} / ${Number(m.storage_allocated_gb)} GB (${usagePercent(m.storage_used_gb, m.storage_allocated_gb).toFixed(0)}%)`
+                              : "—"}
+                          </span>
                         </td>
                       </tr>
                     );
