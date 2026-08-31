@@ -13,12 +13,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  SCAN_OVERDUE_DAYS,
   formatDateTime,
   isEndOfLife,
+  isOverCapacity,
+  latestByDatabase,
   majorVersionLabel,
+  usagePercent,
 } from "@/lib/inventory";
-import { getDatabases, getScanLog, getServers } from "@/lib/inventory.functions";
+import {
+  getDatabases,
+  getLatestMetrics,
+  getScanLog,
+  getServers,
+} from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
