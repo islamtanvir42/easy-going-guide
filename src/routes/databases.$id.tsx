@@ -187,8 +187,8 @@ function DatabaseDetail() {
                     <Tooltip
                       contentStyle={{
                         fontSize: 12,
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
+                        background: "var(--card)",
+                        border: "1px solid var(--border)",
                       }}
                     />
                     <Line
