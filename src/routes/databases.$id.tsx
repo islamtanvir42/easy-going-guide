@@ -2,12 +2,28 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { StatusBadge, environmentTone } from "@/components/inventory/StatusBadge";
+import { UsageBar } from "@/components/inventory/UsageBar";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   formatDate,
   formatDateTime,
   isEndOfLife,
+  usagePercent,
 } from "@/lib/inventory";
-import { getDatabase, getScanLogForServer, getVersionHistory } from "@/lib/inventory.functions";
+import {
+  getDatabase,
+  getMetricsForDatabase,
+  getScanLogForServer,
+  getVersionHistory,
+} from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/databases/$id")({
@@ -45,6 +61,10 @@ function DatabaseDetail() {
     queryKey: ["version_history", id],
     queryFn: () => getVersionHistory({ data: { id } }),
   });
+  const metrics = useQuery({
+    queryKey: ["resource_metrics", id],
+    queryFn: () => getMetricsForDatabase({ data: { id } }),
+  });
   const serverId = db.data?.server_id;
   const scans = useQuery({
     queryKey: ["scan_log", serverId],
@@ -69,6 +89,13 @@ function DatabaseDetail() {
 
   const row = db.data;
   const eol = isEndOfLife(row.oracle_version);
+  const metricRows = metrics.data ?? [];
+  const current = metricRows[metricRows.length - 1] ?? null;
+  const trend = metricRows.map((m) => ({
+    date: formatDate(m.recorded_at),
+    "RAM used (GB)": Number(m.ram_used_gb),
+    "Storage used (GB)": Number(m.storage_used_gb),
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,6 +150,68 @@ function DatabaseDetail() {
             <Field label="Operating system" value={row.servers?.os_version ?? "—"} mono />
             <Field label="Datacenter" value={row.servers?.datacenter ?? "—"} />
           </dl>
+        </section>
+
+        <section className="rounded-lg border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold tracking-tight">Resource usage</h2>
+          {current ? (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <UsageBar
+                  label="RAM"
+                  percent={usagePercent(current.ram_used_gb, current.ram_allocated_gb)}
+                  detail={`${Number(current.ram_used_gb)} / ${Number(current.ram_allocated_gb)} GB`}
+                />
+                <UsageBar
+                  label="CPU"
+                  percent={Number(current.cpu_usage_percent)}
+                  detail={`${Number(current.cpu_cores)} cores`}
+                />
+                <UsageBar
+                  label="Storage"
+                  percent={usagePercent(current.storage_used_gb, current.storage_allocated_gb)}
+                  detail={`${Number(current.storage_used_gb)} / ${Number(current.storage_allocated_gb)} GB`}
+                />
+                <UsageBar
+                  label="Tablespace"
+                  percent={Number(current.tablespace_used_percent)}
+                  detail="of allocated tablespace"
+                />
+              </div>
+              <div className="mt-6 h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trend} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="currentColor" />
+                    <YAxis tick={{ fontSize: 11 }} stroke="currentColor" />
+                    <Tooltip
+                      contentStyle={{
+                        fontSize: 12,
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="RAM used (GB)"
+                      stroke="var(--color-primary)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Storage used (GB)"
+                      stroke="var(--color-warning)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">No resource metrics recorded.</p>
+          )}
         </section>
 
         <section className="rounded-lg border bg-card p-5">
