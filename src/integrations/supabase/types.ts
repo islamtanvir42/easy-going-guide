@@ -18,39 +18,48 @@ export type Database = {
         Row: {
           created_at: string
           edition: string | null
+          expiry_date: string | null
           id: string
           instance_name: string
           oracle_version: string
           owner_id: string | null
           patch_level: string | null
+          renewal_date: string | null
           server_id: string
           sid: string | null
+          start_date: string | null
           status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           edition?: string | null
+          expiry_date?: string | null
           id?: string
           instance_name: string
           oracle_version: string
           owner_id?: string | null
           patch_level?: string | null
+          renewal_date?: string | null
           server_id: string
           sid?: string | null
+          start_date?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           edition?: string | null
+          expiry_date?: string | null
           id?: string
           instance_name?: string
           oracle_version?: string
           owner_id?: string | null
           patch_level?: string | null
+          renewal_date?: string | null
           server_id?: string
           sid?: string | null
+          start_date?: string | null
           status?: string
           updated_at?: string
         }
