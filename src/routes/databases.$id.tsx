@@ -13,6 +13,8 @@ import {
   YAxis,
 } from "recharts";
 import {
+  expiryBadgeLabel,
+  expiryState,
   formatDate,
   formatDateTime,
   isEndOfLife,
@@ -150,6 +152,62 @@ function DatabaseDetail() {
             <Field label="Operating system" value={row.servers?.os_version ?? "—"} mono />
             <Field label="Datacenter" value={row.servers?.datacenter ?? "—"} />
           </dl>
+        </section>
+
+        <section className="rounded-lg border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold tracking-tight">Lifecycle</h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Database · {row.instance_name}
+              </h3>
+              <dl className="grid gap-4">
+                <Field label="Start date" value={formatDate(row.start_date)} mono />
+                <Field label="Renewal date" value={formatDate(row.renewal_date)} mono />
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Expiry date
+                  </dt>
+                  <dd className="tech mt-1 flex items-center gap-2 text-sm">
+                    {formatDate(row.expiry_date)}
+                    {expiryBadgeLabel(row.expiry_date) ? (
+                      <StatusBadge
+                        tone={expiryState(row.expiry_date) === "expired" ? "danger" : "warning"}
+                      >
+                        {expiryBadgeLabel(row.expiry_date)}
+                      </StatusBadge>
+                    ) : null}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <div>
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Server · {row.servers?.hostname ?? "—"}
+              </h3>
+              <dl className="grid gap-4">
+                <Field label="Start date" value={formatDate(row.servers?.start_date)} mono />
+                <Field label="Renewal date" value={formatDate(row.servers?.renewal_date)} mono />
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Expiry date
+                  </dt>
+                  <dd className="tech mt-1 flex items-center gap-2 text-sm">
+                    {formatDate(row.servers?.expiry_date)}
+                    {expiryBadgeLabel(row.servers?.expiry_date) ? (
+                      <StatusBadge
+                        tone={
+                          expiryState(row.servers?.expiry_date) === "expired" ? "danger" : "warning"
+                        }
+                      >
+                        {expiryBadgeLabel(row.servers?.expiry_date)}
+                      </StatusBadge>
+                    ) : null}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
         </section>
 
         <section className="rounded-lg border bg-card p-5">
