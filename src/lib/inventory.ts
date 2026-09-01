@@ -61,6 +61,35 @@ export function majorVersionLabel(version: string) {
 
 export const SCAN_OVERDUE_DAYS = 7;
 
+/** Warn this many days before a license/support expiry date. */
+export const EXPIRY_WARNING_DAYS = 90;
+
+export type ExpiryState = "expired" | "warning" | "ok" | "none";
+
+export function daysUntilExpiry(expiry: string | null | undefined): number | null {
+  if (!expiry) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(`${expiry}T00:00:00`);
+  return Math.ceil((end.getTime() - today.getTime()) / 86_400_000);
+}
+
+export function expiryState(expiry: string | null | undefined): ExpiryState {
+  const days = daysUntilExpiry(expiry);
+  if (days === null) return "none";
+  if (days < 0) return "expired";
+  if (days <= EXPIRY_WARNING_DAYS) return "warning";
+  return "ok";
+}
+
+export function expiryBadgeLabel(expiry: string | null | undefined): string | null {
+  const state = expiryState(expiry);
+  const days = daysUntilExpiry(expiry);
+  if (state === "expired") return `Expired ${Math.abs(days ?? 0)}d ago`;
+  if (state === "warning") return `Expires in ${days}d`;
+  return null;
+}
+
 export function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
   return new Date(value).toLocaleString(undefined, {
