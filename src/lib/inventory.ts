@@ -6,6 +6,9 @@ export type Server = {
   os_version: string | null;
   environment: string;
   datacenter: string | null;
+  start_date: string | null;
+  renewal_date: string | null;
+  expiry_date: string | null;
 };
 
 export type Owner = { id: string; name: string; team: string | null };
