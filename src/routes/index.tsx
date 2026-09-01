@@ -223,7 +223,9 @@ function Overview() {
             label="Expiring in 90 days"
             value={expiringDbs.length + expiringServers.length}
             hint={`${expiringDbs.length} databases · ${expiringServers.length} servers`}
-            tone={expiringDbs.length + expiringServers.length > 0 ? "warning" : undefined}
+            {...(expiringDbs.length + expiringServers.length > 0
+              ? { tone: "warning" as const }
+              : {})}
           />
         </div>
 
