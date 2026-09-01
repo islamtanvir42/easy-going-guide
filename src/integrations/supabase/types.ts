@@ -206,33 +206,42 @@ export type Database = {
           created_at: string
           datacenter: string | null
           environment: string
+          expiry_date: string | null
           hostname: string
           id: string
           ip_address: string | null
           os_family: string
           os_version: string | null
+          renewal_date: string | null
+          start_date: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           datacenter?: string | null
           environment: string
+          expiry_date?: string | null
           hostname: string
           id?: string
           ip_address?: string | null
           os_family: string
           os_version?: string | null
+          renewal_date?: string | null
+          start_date?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           datacenter?: string | null
           environment?: string
+          expiry_date?: string | null
           hostname?: string
           id?: string
           ip_address?: string | null
           os_family?: string
           os_version?: string | null
+          renewal_date?: string | null
+          start_date?: string | null
           updated_at?: string
         }
         Relationships: []
