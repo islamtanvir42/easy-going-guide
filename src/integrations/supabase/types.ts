@@ -80,6 +80,27 @@ export type Database = {
           },
         ]
       }
+      employees: {
+        Row: {
+          department: string | null
+          id: number
+          name: string | null
+          salary: number | null
+        }
+        Insert: {
+          department?: string | null
+          id: number
+          name?: string | null
+          salary?: number | null
+        }
+        Update: {
+          department?: string | null
+          id?: number
+          name?: string | null
+          salary?: number | null
+        }
+        Relationships: []
+      }
       owners: {
         Row: {
           id: string
