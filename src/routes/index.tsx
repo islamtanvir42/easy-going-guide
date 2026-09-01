@@ -101,6 +101,15 @@ function Overview() {
     return m ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb) : false;
   }).length;
 
+  const expiringDbs = rows.filter((r) => {
+    const state = expiryState(r.expiry_date);
+    return state === "warning" || state === "expired";
+  });
+  const expiringServers = serverRows.filter((s) => {
+    const state = expiryState(s.expiry_date);
+    return state === "warning" || state === "expired";
+  });
+
   const topRam = useMemo(() => {
     const data = rows
       .map((r) => {
@@ -210,7 +219,53 @@ function Overview() {
             hint="Databases near storage capacity"
             tone="danger"
           />
+          <SummaryCard
+            label="Expiring in 90 days"
+            value={expiringDbs.length + expiringServers.length}
+            hint={`${expiringDbs.length} databases · ${expiringServers.length} servers`}
+            tone={expiringDbs.length + expiringServers.length > 0 ? "warning" : undefined}
+          />
         </div>
+
+        {expiringDbs.length + expiringServers.length > 0 ? (
+          <section className="rounded-lg border border-warning/40 bg-warning-soft p-4">
+            <h2 className="text-sm font-semibold text-warning">
+              Expiry alerts — within the next 90 days
+            </h2>
+            <ul className="mt-2 space-y-1 text-sm">
+              {expiringDbs.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-2">
+                  <Link
+                    to="/databases/$id"
+                    params={{ id: r.id }}
+                    className="tech font-medium text-primary hover:underline"
+                  >
+                    {r.instance_name}
+                  </Link>
+                  <span className="text-muted-foreground">database</span>
+                  <StatusBadge tone={expiryState(r.expiry_date) === "expired" ? "danger" : "warning"}>
+                    {expiryBadgeLabel(r.expiry_date)}
+                  </StatusBadge>
+                  <span className="tech text-xs text-muted-foreground">
+                    {formatDate(r.expiry_date)}
+                  </span>
+                </li>
+              ))}
+              {expiringServers.map((s) => (
+                <li key={s.id} className="flex flex-wrap items-center gap-2">
+                  <span className="tech font-medium">{s.hostname}</span>
+                  <span className="text-muted-foreground">server</span>
+                  <StatusBadge tone={expiryState(s.expiry_date) === "expired" ? "danger" : "warning"}>
+                    {expiryBadgeLabel(s.expiry_date)}
+                  </StatusBadge>
+                  <span className="tech text-xs text-muted-foreground">
+                    {formatDate(s.expiry_date)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <div className="grid gap-4 lg:grid-cols-3">
           <BarPanel
@@ -269,19 +324,20 @@ function Overview() {
                   <th className="px-4 py-2 font-medium">Oracle version</th>
                   <th className="px-4 py-2 font-medium">OS family</th>
                   <th className="px-4 py-2 font-medium">Environment</th>
+                  <th className="px-4 py-2 font-medium">Expiry</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {databases.isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                       Loading inventory…
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                       No databases match these filters.
                     </td>
                   </tr>
@@ -327,6 +383,19 @@ function Overview() {
                           >
                             {r.servers?.environment ?? "—"}
                           </StatusBadge>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          {expiryBadgeLabel(r.expiry_date) ? (
+                            <StatusBadge
+                              tone={expiryState(r.expiry_date) === "expired" ? "danger" : "warning"}
+                            >
+                              {expiryBadgeLabel(r.expiry_date)}
+                            </StatusBadge>
+                          ) : (
+                            <span className="tech text-xs text-muted-foreground">
+                              {formatDate(r.expiry_date)}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-2.5">
                           <StatusBadge tone={r.status === "active" ? "success" : "neutral"}>
