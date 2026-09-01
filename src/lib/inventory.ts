@@ -23,6 +23,9 @@ export type DatabaseRow = {
   edition: string | null;
   patch_level: string | null;
   status: string;
+  start_date: string | null;
+  renewal_date: string | null;
+  expiry_date: string | null;
   servers: Server | null;
   owners: Owner | null;
 };
