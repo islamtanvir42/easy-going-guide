@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      database_schemas: {
+        Row: {
+          created_at: string
+          database_id: string
+          description: string | null
+          id: string
+          last_analyzed: string | null
+          schema_name: string
+          schema_owner: string | null
+          size_gb: number
+          table_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          database_id: string
+          description?: string | null
+          id?: string
+          last_analyzed?: string | null
+          schema_name: string
+          schema_owner?: string | null
+          size_gb?: number
+          table_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          database_id?: string
+          description?: string | null
+          id?: string
+          last_analyzed?: string | null
+          schema_name?: string
+          schema_owner?: string | null
+          size_gb?: number
+          table_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "database_schemas_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       databases: {
         Row: {
           created_at: string
