@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type {
   DatabaseRow,
+  DatabaseSchemaRow,
   ResourceMetricRow,
   ScanLogRow,
   Server,
@@ -71,5 +72,13 @@ export const getMetricsForDatabase = createServerFn({ method: "GET" })
   .handler(async ({ data }) =>
     rest<ResourceMetricRow[]>(
       `resource_metrics?select=*&database_id=eq.${encodeURIComponent(data.id)}&order=recorded_at.asc`,
+    ),
+  );
+
+export const getSchemasForDatabase = createServerFn({ method: "GET" })
+  .inputValidator(idSchema)
+  .handler(async ({ data }) =>
+    rest<DatabaseSchemaRow[]>(
+      `database_schemas?select=*&database_id=eq.${encodeURIComponent(data.id)}&order=schema_name`,
     ),
   );

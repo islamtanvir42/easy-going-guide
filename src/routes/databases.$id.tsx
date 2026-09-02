@@ -24,6 +24,7 @@ import {
   getDatabase,
   getMetricsForDatabase,
   getScanLogForServer,
+  getSchemasForDatabase,
   getVersionHistory,
 } from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,10 @@ function DatabaseDetail() {
   const metrics = useQuery({
     queryKey: ["resource_metrics", id],
     queryFn: () => getMetricsForDatabase({ data: { id } }),
+  });
+  const schemas = useQuery({
+    queryKey: ["database_schemas", id],
+    queryFn: () => getSchemasForDatabase({ data: { id } }),
   });
   const serverId = db.data?.server_id;
   const scans = useQuery({
@@ -294,6 +299,50 @@ function DatabaseDetail() {
             <p className="text-sm text-muted-foreground">No recorded version changes.</p>
           )}
         </section>
+
+        <section className="rounded-lg border bg-card p-5">
+          <h2 className="mb-1 text-sm font-semibold tracking-tight">Datasets / schemas</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Data sets stored inside {row.instance_name}
+          </p>
+          {schemas.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading datasets…</p>
+          ) : schemas.data && schemas.data.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-4 font-medium">Schema</th>
+                    <th className="py-2 pr-4 font-medium">Owner</th>
+                    <th className="py-2 pr-4 font-medium">Purpose</th>
+                    <th className="py-2 pr-4 text-right font-medium">Tables</th>
+                    <th className="py-2 pr-4 text-right font-medium">Size (GB)</th>
+                    <th className="py-2 font-medium">Last analyzed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {schemas.data.map((s) => (
+                    <tr key={s.id}>
+                      <td className="tech py-2.5 pr-4">{s.schema_name}</td>
+                      <td className="tech py-2.5 pr-4 text-muted-foreground">
+                        {s.schema_owner ?? "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-muted-foreground">{s.description ?? "—"}</td>
+                      <td className="tech py-2.5 pr-4 text-right">{s.table_count}</td>
+                      <td className="tech py-2.5 pr-4 text-right">{Number(s.size_gb).toFixed(1)}</td>
+                      <td className="py-2.5 text-muted-foreground">
+                        {s.last_analyzed ? formatDate(s.last_analyzed) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No datasets recorded for this database.</p>
+          )}
+        </section>
+
 
         <section className="rounded-lg border bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold tracking-tight">
