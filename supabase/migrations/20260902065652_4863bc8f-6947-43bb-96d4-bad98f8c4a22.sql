@@ -1,0 +1,1 @@
+ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
