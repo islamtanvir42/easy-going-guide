@@ -143,3 +143,14 @@ export function latestByDatabase(rows: ResourceMetricRow[]) {
   });
   return map;
 }
+
+export type DatabaseSchemaRow = {
+  id: string;
+  database_id: string;
+  schema_name: string;
+  schema_owner: string | null;
+  description: string | null;
+  table_count: number;
+  size_gb: number;
+  last_analyzed: string | null;
+};
