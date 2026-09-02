@@ -24,6 +24,7 @@ import {
   getDatabase,
   getMetricsForDatabase,
   getScanLogForServer,
+  getSchemasForDatabase,
   getVersionHistory,
 } from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,10 @@ function DatabaseDetail() {
   const metrics = useQuery({
     queryKey: ["resource_metrics", id],
     queryFn: () => getMetricsForDatabase({ data: { id } }),
+  });
+  const schemas = useQuery({
+    queryKey: ["database_schemas", id],
+    queryFn: () => getSchemasForDatabase({ data: { id } }),
   });
   const serverId = db.data?.server_id;
   const scans = useQuery({
