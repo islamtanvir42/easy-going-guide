@@ -29,7 +29,7 @@ import {
 } from "@/lib/inventory.functions";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/databases/$id")({
+export const Route = createFileRoute("/_authenticated/databases/$id")({
   head: () => ({
     meta: [
       { title: "Database Detail — Database Inventory" },
