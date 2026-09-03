@@ -87,7 +87,7 @@ function DatabaseDetail() {
     return (
       <div className="p-8">
         <p className="text-sm text-muted-foreground">This database was not found.</p>
-        <Link to="/" className="mt-3 inline-block text-sm text-primary hover:underline">
+        <Link to="/dashboard" className="mt-3 inline-block text-sm text-primary hover:underline">
           Back to inventory
         </Link>
       </div>
@@ -108,7 +108,7 @@ function DatabaseDetail() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
         <div className="mx-auto max-w-5xl px-6 py-4">
-          <Link to="/" className="text-xs text-primary hover:underline">
+          <Link to="/dashboard" className="text-xs text-primary hover:underline">
             ← Back to inventory
           </Link>
           <div className="mt-2 flex flex-wrap items-center gap-3">

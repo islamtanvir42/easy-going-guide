@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { UserMenu } from "@/components/inventory/UserMenu";
 import { BarPanel } from "@/components/inventory/BarPanel";
 import { StatusBadge, environmentTone } from "@/components/inventory/StatusBadge";
 import { Input } from "@/components/ui/input";
@@ -188,9 +189,12 @@ function Overview() {
             <h1 className="text-lg font-semibold tracking-tight">Database Inventory</h1>
             <p className="text-xs text-muted-foreground">Oracle estate across all environments</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Last scan</p>
-            <p className="tech text-sm">{formatDateTime(lastScan)}</p>
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Last scan</p>
+              <p className="tech text-sm">{formatDateTime(lastScan)}</p>
+            </div>
+            <UserMenu />
           </div>
         </div>
       </header>
