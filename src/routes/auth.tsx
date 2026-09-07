@@ -82,9 +82,12 @@ function AuthPage() {
         });
         if (signUpError) throw signUpError;
         if (!data.session) {
-          setNotice("Account created. Check your email to confirm before signing in.");
+          setNotice(
+            "Request sent. Confirm your email, then an administrator has to approve your access before you can sign in.",
+          );
           setMode("signin");
         }
+
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
@@ -109,8 +112,10 @@ function AuthPage() {
           {mode === "signin" ? "Sign in" : "Create an account"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Access to the Oracle database inventory is restricted to authorised users.
+          Access to the Oracle database inventory is restricted. New accounts must be approved by
+          an administrator before they can open the dashboard.
         </p>
+
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           {mode === "signup" && (
