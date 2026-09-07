@@ -168,23 +168,35 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           display_name: string | null
+          email: string | null
           id: string
+          status: string
           team: string | null
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           id: string
+          status?: string
           team?: string | null
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           id?: string
+          status?: string
           team?: string | null
           updated_at?: string
         }
