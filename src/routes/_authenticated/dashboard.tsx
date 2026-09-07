@@ -186,7 +186,7 @@ function Overview() {
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
-            <h1 className="text-lg font-semibold tracking-tight">Database Inventory</h1>
+            <h1 className="text-lg font-semibold tracking-tight">Database Inventory — Oracle Estate Overview</h1>
             <p className="text-xs text-muted-foreground">Oracle estate across all environments</p>
           </div>
           <div className="flex items-center gap-6">

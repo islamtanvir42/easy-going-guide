@@ -41,7 +41,7 @@ function Landing() {
         <p className="tech text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Internal tooling
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Database Inventory</h1>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Database Inventory — Oracle Estate Tracking</h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
           A single view of every Oracle instance across your servers — versions and
           end-of-life flags, environments, schemas, resource usage and lifecycle expiry
