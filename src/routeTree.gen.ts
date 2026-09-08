@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PendingRouteImport } from './routes/pending'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
 import { Route as AuthenticatedDatabasesIdRouteImport } from './routes/_authenticated/databases.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -36,6 +38,11 @@ const PendingRoute = PendingRouteImport.update({
   path: '/pending',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   id: '/approvals',
   path: '/approvals',
@@ -44,6 +51,11 @@ const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
+  id: '/manage',
+  path: '/manage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDatabasesIdRoute =
@@ -57,16 +69,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pending': typeof PendingRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/manage': typeof AuthenticatedManageRoute
   '/databases/$id': typeof AuthenticatedDatabasesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pending': typeof PendingRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/manage': typeof AuthenticatedManageRoute
   '/databases/$id': typeof AuthenticatedDatabasesIdRoute
 }
 export interface FileRoutesById {
@@ -75,25 +91,43 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/pending': typeof PendingRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/manage': typeof AuthenticatedManageRoute
   '/_authenticated/databases/$id': typeof AuthenticatedDatabasesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/pending' | '/approvals' | '/dashboard' | '/databases/$id'
+    | '/'
+    | '/auth'
+    | '/pending'
+    | '/admin'
+    | '/approvals'
+    | '/dashboard'
+    | '/manage'
+    | '/databases/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/auth' | '/pending' | '/approvals' | '/dashboard' | '/databases/$id'
+    | '/'
+    | '/auth'
+    | '/pending'
+    | '/admin'
+    | '/approvals'
+    | '/dashboard'
+    | '/manage'
+    | '/databases/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/pending'
+    | '/_authenticated/admin'
     | '/_authenticated/approvals'
     | '/_authenticated/dashboard'
+    | '/_authenticated/manage'
     | '/_authenticated/databases/$id'
   fileRoutesById: FileRoutesById
 }
@@ -134,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PendingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/approvals': {
       id: '/_authenticated/approvals'
       path: '/approvals'
@@ -148,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/manage': {
+      id: '/_authenticated/manage'
+      path: '/manage'
+      fullPath: '/manage'
+      preLoaderRoute: typeof AuthenticatedManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/databases/$id': {
       id: '/_authenticated/databases/$id'
       path: '/databases/$id'
@@ -159,14 +207,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedManageRoute: typeof AuthenticatedManageRoute
   AuthenticatedDatabasesIdRoute: typeof AuthenticatedDatabasesIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedManageRoute: AuthenticatedManageRoute,
   AuthenticatedDatabasesIdRoute: AuthenticatedDatabasesIdRoute,
 }
 
