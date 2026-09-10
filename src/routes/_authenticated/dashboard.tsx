@@ -57,14 +57,27 @@ function SummaryCard({
   value,
   hint,
   tone,
+  active,
+  onClick,
 }: {
   label: string;
   value: number | string;
   hint: string;
   tone?: "warning" | "danger";
+  active?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-lg border bg-card p-4 text-left transition-colors",
+        onClick && "cursor-pointer hover:bg-accent/50",
+        active && "border-primary ring-1 ring-primary",
+      )}
+    >
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p
         className={cn(
@@ -76,9 +89,11 @@ function SummaryCard({
         {value}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-    </div>
+    </button>
   );
 }
+
+type CardFilter = "all" | "servers" | "outdated" | "overStorage" | "expiring";
 
 function Overview() {
   const databases = useQuery({ queryKey: ["databases"], queryFn: () => getDatabases() });
@@ -89,6 +104,9 @@ function Overview() {
   const [search, setSearch] = useState("");
   const [environment, setEnvironment] = useState("all");
   const [status, setStatus] = useState("all");
+  const [cardFilter, setCardFilter] = useState<CardFilter>("all");
+
+  const toggleCard = (f: CardFilter) => setCardFilter((cur) => (cur === f ? "all" : f));
 
   const rows = databases.data ?? [];
   const serverRows = servers.data ?? [];
