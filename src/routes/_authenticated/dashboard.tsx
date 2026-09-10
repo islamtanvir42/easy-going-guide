@@ -93,7 +93,7 @@ function SummaryCard({
   );
 }
 
-type CardFilter = "all" | "outdated" | "overStorage" | "expiring";
+type CardFilter = "all" | "servers" | "outdated" | "overStorage" | "expiring";
 
 function Overview() {
   const databases = useQuery({ queryKey: ["databases"], queryFn: () => getDatabases() });
