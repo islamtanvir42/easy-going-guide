@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ucbLogoAsset from "@/assets/ucb-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -108,7 +109,12 @@ function AuthPage() {
         <Link to="/" className="text-xs text-muted-foreground hover:underline">
           ← Back
         </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+        <img
+          src={ucbLogoAsset.url}
+          alt="UCB"
+          className="mt-8 h-auto w-36 object-contain"
+        />
+        <h1 className="mt-6 text-2xl font-semibold tracking-tight">
           {mode === "signin" ? "Sign in" : "Create an account"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
