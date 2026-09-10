@@ -104,6 +104,9 @@ function Overview() {
   const [search, setSearch] = useState("");
   const [environment, setEnvironment] = useState("all");
   const [status, setStatus] = useState("all");
+  const [cardFilter, setCardFilter] = useState<CardFilter>("all");
+
+  const toggleCard = (f: CardFilter) => setCardFilter((cur) => (cur === f ? "all" : f));
 
   const rows = databases.data ?? [];
   const serverRows = servers.data ?? [];
