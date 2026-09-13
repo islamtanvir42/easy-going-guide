@@ -197,8 +197,27 @@ function Overview() {
       (r.servers?.hostname ?? "").toLowerCase().includes(term);
     const matchesEnv = environment === "all" || r.servers?.environment === environment;
     const matchesStatus = status === "all" || r.status === status;
-    return matchesTerm && matchesEnv && matchesStatus;
+    if (!matchesTerm || !matchesEnv || !matchesStatus) return false;
+    if (cardFilter === "outdated") return isEndOfLife(r.oracle_version);
+    if (cardFilter === "overStorage") {
+      const m = latest.get(r.id);
+      return m ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb) : false;
+    }
+    if (cardFilter === "expiring") {
+      const state = expiryState(r.expiry_date);
+      return state === "warning" || state === "expired";
+    }
+    return true;
   });
+
+  const filteredServers = serverRows.filter((s) => {
+    const term = search.trim().toLowerCase();
+    const matchesTerm = !term || s.hostname.toLowerCase().includes(term);
+    const matchesEnv = environment === "all" || s.environment === environment;
+    return matchesTerm && matchesEnv;
+  });
+
+  const showingServers = cardFilter === "servers";
 
   return (
     <div className="min-h-screen bg-background">
