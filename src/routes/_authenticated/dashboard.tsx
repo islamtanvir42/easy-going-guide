@@ -250,28 +250,38 @@ function Overview() {
             label="Total databases"
             value={rows.length}
             hint={`${rows.filter((r) => r.status === "active").length} active`}
+            active={cardFilter === "all"}
+            onClick={() => toggleCard("all")}
           />
           <SummaryCard
             label="Total servers"
             value={serverRows.length}
             hint={`${new Set(serverRows.map((s) => s.datacenter)).size} datacenters`}
+            active={cardFilter === "servers"}
+            onClick={() => toggleCard("servers")}
           />
           <SummaryCard
             label="Outdated versions"
             value={outdated}
             hint="On an end-of-life Oracle release"
             tone="warning"
+            active={cardFilter === "outdated"}
+            onClick={() => toggleCard("outdated")}
           />
           <SummaryCard
             label="Over 85% storage"
             value={overCapacity}
             hint="Databases near storage capacity"
             tone="danger"
+            active={cardFilter === "overStorage"}
+            onClick={() => toggleCard("overStorage")}
           />
           <SummaryCard
             label="Expiring in 90 days"
             value={expiringDbs.length + expiringServers.length}
             hint={`${expiringDbs.length} databases · ${expiringServers.length} servers`}
+            active={cardFilter === "expiring"}
+            onClick={() => toggleCard("expiring")}
             {...(expiringDbs.length + expiringServers.length > 0
               ? { tone: "warning" as const }
               : {})}
