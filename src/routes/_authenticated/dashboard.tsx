@@ -532,6 +532,7 @@ function Overview() {
               </tbody>
             </table>
           </div>
+          )}
         </section>
       </main>
     </div>
