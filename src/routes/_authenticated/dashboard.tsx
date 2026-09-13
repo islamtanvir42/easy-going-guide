@@ -378,6 +378,66 @@ function Overview() {
             </span>
           </div>
 
+          {showingServers ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-2 font-medium">Hostname</th>
+                  <th className="px-4 py-2 font-medium">IP address</th>
+                  <th className="px-4 py-2 font-medium">OS family</th>
+                  <th className="px-4 py-2 font-medium">Environment</th>
+                  <th className="px-4 py-2 font-medium">Datacenter</th>
+                  <th className="px-4 py-2 font-medium">Expiry</th>
+                </tr>
+              </thead>
+              <tbody>
+                {servers.isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      Loading servers…
+                    </td>
+                  </tr>
+                ) : filteredServers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      No servers match these filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredServers.map((s) => (
+                    <tr key={s.id} className="border-b last:border-0">
+                      <td className="tech px-4 py-2.5 font-medium">{s.hostname}</td>
+                      <td className="tech px-4 py-2.5 text-muted-foreground">
+                        {s.ip_address ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5">{s.os_family}</td>
+                      <td className="px-4 py-2.5">
+                        <StatusBadge mono tone={environmentTone(s.environment)}>
+                          {s.environment}
+                        </StatusBadge>
+                      </td>
+                      <td className="px-4 py-2.5">{s.datacenter ?? "—"}</td>
+                      <td className="px-4 py-2.5">
+                        {expiryBadgeLabel(s.expiry_date) ? (
+                          <StatusBadge
+                            tone={expiryState(s.expiry_date) === "expired" ? "danger" : "warning"}
+                          >
+                            {expiryBadgeLabel(s.expiry_date)}
+                          </StatusBadge>
+                        ) : (
+                          <span className="tech text-xs text-muted-foreground">
+                            {formatDate(s.expiry_date)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
