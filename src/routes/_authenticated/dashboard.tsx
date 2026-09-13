@@ -372,7 +372,9 @@ function Overview() {
               </SelectContent>
             </Select>
             <span className="ml-auto text-xs text-muted-foreground">
-              {filtered.length} of {rows.length} databases
+              {showingServers
+                ? `${filteredServers.length} of ${serverRows.length} servers`
+                : `${filtered.length} of ${rows.length} databases`}
             </span>
           </div>
 
