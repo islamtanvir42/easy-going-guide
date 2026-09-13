@@ -197,8 +197,27 @@ function Overview() {
       (r.servers?.hostname ?? "").toLowerCase().includes(term);
     const matchesEnv = environment === "all" || r.servers?.environment === environment;
     const matchesStatus = status === "all" || r.status === status;
-    return matchesTerm && matchesEnv && matchesStatus;
+    if (!matchesTerm || !matchesEnv || !matchesStatus) return false;
+    if (cardFilter === "outdated") return isEndOfLife(r.oracle_version);
+    if (cardFilter === "overStorage") {
+      const m = latest.get(r.id);
+      return m ? isOverCapacity(m.storage_used_gb, m.storage_allocated_gb) : false;
+    }
+    if (cardFilter === "expiring") {
+      const state = expiryState(r.expiry_date);
+      return state === "warning" || state === "expired";
+    }
+    return true;
   });
+
+  const filteredServers = serverRows.filter((s) => {
+    const term = search.trim().toLowerCase();
+    const matchesTerm = !term || s.hostname.toLowerCase().includes(term);
+    const matchesEnv = environment === "all" || s.environment === environment;
+    return matchesTerm && matchesEnv;
+  });
+
+  const showingServers = cardFilter === "servers";
 
   return (
     <div className="min-h-screen bg-background">
@@ -231,28 +250,38 @@ function Overview() {
             label="Total databases"
             value={rows.length}
             hint={`${rows.filter((r) => r.status === "active").length} active`}
+            active={cardFilter === "all"}
+            onClick={() => toggleCard("all")}
           />
           <SummaryCard
             label="Total servers"
             value={serverRows.length}
             hint={`${new Set(serverRows.map((s) => s.datacenter)).size} datacenters`}
+            active={cardFilter === "servers"}
+            onClick={() => toggleCard("servers")}
           />
           <SummaryCard
             label="Outdated versions"
             value={outdated}
             hint="On an end-of-life Oracle release"
             tone="warning"
+            active={cardFilter === "outdated"}
+            onClick={() => toggleCard("outdated")}
           />
           <SummaryCard
             label="Over 85% storage"
             value={overCapacity}
             hint="Databases near storage capacity"
             tone="danger"
+            active={cardFilter === "overStorage"}
+            onClick={() => toggleCard("overStorage")}
           />
           <SummaryCard
             label="Expiring in 90 days"
             value={expiringDbs.length + expiringServers.length}
             hint={`${expiringDbs.length} databases · ${expiringServers.length} servers`}
+            active={cardFilter === "expiring"}
+            onClick={() => toggleCard("expiring")}
             {...(expiringDbs.length + expiringServers.length > 0
               ? { tone: "warning" as const }
               : {})}
@@ -343,10 +372,72 @@ function Overview() {
               </SelectContent>
             </Select>
             <span className="ml-auto text-xs text-muted-foreground">
-              {filtered.length} of {rows.length} databases
+              {showingServers
+                ? `${filteredServers.length} of ${serverRows.length} servers`
+                : `${filtered.length} of ${rows.length} databases`}
             </span>
           </div>
 
+          {showingServers ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-2 font-medium">Hostname</th>
+                  <th className="px-4 py-2 font-medium">IP address</th>
+                  <th className="px-4 py-2 font-medium">OS family</th>
+                  <th className="px-4 py-2 font-medium">Environment</th>
+                  <th className="px-4 py-2 font-medium">Datacenter</th>
+                  <th className="px-4 py-2 font-medium">Expiry</th>
+                </tr>
+              </thead>
+              <tbody>
+                {servers.isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      Loading servers…
+                    </td>
+                  </tr>
+                ) : filteredServers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      No servers match these filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredServers.map((s) => (
+                    <tr key={s.id} className="border-b last:border-0">
+                      <td className="tech px-4 py-2.5 font-medium">{s.hostname}</td>
+                      <td className="tech px-4 py-2.5 text-muted-foreground">
+                        {s.ip_address ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5">{s.os_family}</td>
+                      <td className="px-4 py-2.5">
+                        <StatusBadge mono tone={environmentTone(s.environment)}>
+                          {s.environment}
+                        </StatusBadge>
+                      </td>
+                      <td className="px-4 py-2.5">{s.datacenter ?? "—"}</td>
+                      <td className="px-4 py-2.5">
+                        {expiryBadgeLabel(s.expiry_date) ? (
+                          <StatusBadge
+                            tone={expiryState(s.expiry_date) === "expired" ? "danger" : "warning"}
+                          >
+                            {expiryBadgeLabel(s.expiry_date)}
+                          </StatusBadge>
+                        ) : (
+                          <span className="tech text-xs text-muted-foreground">
+                            {formatDate(s.expiry_date)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -441,6 +532,7 @@ function Overview() {
               </tbody>
             </table>
           </div>
+          )}
         </section>
       </main>
     </div>
