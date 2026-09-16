@@ -38,5 +38,6 @@ export function StatusBadge({
 export function environmentTone(environment: string): Tone {
   if (environment === "prod") return "danger";
   if (environment === "uat") return "warning";
-  return "info";
+  if (environment === "sit") return "info";
+  return "neutral";
 }

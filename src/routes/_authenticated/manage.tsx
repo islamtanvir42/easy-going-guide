@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/manage")({
@@ -21,12 +22,13 @@ export const Route = createFileRoute("/_authenticated/manage")({
       {
         name: "description",
         content:
-          "Member workspace for registering Oracle databases, servers and owners, and recording version upgrades.",
+          "Member workspace for registering Oracle, SQL Server and PostgreSQL databases, servers and owners, and recording version upgrades.",
       },
       { property: "og:title", content: "Add & update databases — Database Inventory" },
       {
         property: "og:description",
-        content: "Register Oracle databases and record version upgrades in the inventory.",
+        content:
+          "Register databases across platforms and record version upgrades in the inventory.",
       },
     ],
   }),
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/manage")({
 
 type ServerOption = { id: string; hostname: string; environment: string };
 type OwnerOption = { id: string; name: string };
-type DbRow = { id: string; instance_name: string; oracle_version: string; server_id: string };
+type DbRow = { id: string; instance_name: string; db_version: string; server_id: string };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -79,7 +81,7 @@ function ManagePage() {
     queryFn: async () => {
       const { data, error: e } = await supabase
         .from("databases")
-        .select("id, instance_name, oracle_version, server_id")
+        .select("id, instance_name, db_version, server_id")
         .order("instance_name");
       if (e) throw e;
       return (data ?? []) as DbRow[];
@@ -89,10 +91,14 @@ function ManagePage() {
   // ---- add database form state
   const [instanceName, setInstanceName] = useState("");
   const [sid, setSid] = useState("");
+  const [platform, setPlatform] = useState("oracle");
   const [version, setVersion] = useState("19.0.0");
   const [edition, setEdition] = useState("Enterprise");
   const [serverId, setServerId] = useState("");
   const [ownerId, setOwnerId] = useState("");
+  const [isRac, setIsRac] = useState(false);
+  const [clusterName, setClusterName] = useState("");
+  const [nodeCount, setNodeCount] = useState("");
   const [startDate, setStartDate] = useState("");
   const [renewalDate, setRenewalDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -104,10 +110,14 @@ function ManagePage() {
       const { error: e } = await supabase.from("databases").insert({
         instance_name: instanceName.trim(),
         sid: sid.trim() || null,
-        oracle_version: version.trim(),
+        platform,
+        db_version: version.trim(),
         edition: edition.trim() || null,
         server_id: serverId,
         owner_id: ownerId || null,
+        is_rac: isRac,
+        cluster_name: isRac ? clusterName.trim() || null : null,
+        node_count: isRac && nodeCount ? Number(nodeCount) : null,
         start_date: startDate || null,
         renewal_date: renewalDate || null,
         expiry_date: expiryDate || null,
@@ -120,6 +130,9 @@ function ManagePage() {
       setError(null);
       setInstanceName("");
       setSid("");
+      setIsRac(false);
+      setClusterName("");
+      setNodeCount("");
       setStartDate("");
       setRenewalDate("");
       setExpiryDate("");
@@ -140,15 +153,15 @@ function ManagePage() {
     mutationFn: async () => {
       const target = (dbs.data ?? []).find((d) => d.id === updateId);
       if (!target) throw new Error("Pick a database first.");
-      if (!newVersion.trim()) throw new Error("Type the new Oracle version.");
+      if (!newVersion.trim()) throw new Error("Type the new version.");
       const { error: e } = await supabase
         .from("databases")
-        .update({ oracle_version: newVersion.trim() })
+        .update({ db_version: newVersion.trim() })
         .eq("id", target.id);
       if (e) throw e;
       const { error: h } = await supabase.from("version_history").insert({
         database_id: target.id,
-        old_version: target.oracle_version,
+        old_version: target.db_version,
         new_version: newVersion.trim(),
       });
       if (h) throw h;
@@ -263,8 +276,24 @@ function ManagePage() {
             <Field label="SID">
               <Input value={sid} onChange={(e) => setSid(e.target.value)} />
             </Field>
-            <Field label="Oracle version">
-              <Input value={version} onChange={(e) => setVersion(e.target.value)} />
+            <Field label="Platform">
+              <Select value={platform} onValueChange={setPlatform}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oracle">Oracle</SelectItem>
+                  <SelectItem value="mssql">SQL Server</SelectItem>
+                  <SelectItem value="postgresql">PostgreSQL</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Version">
+              <Input
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                placeholder="e.g. 19.21.0.0.0, 26ai, 2022, 16"
+              />
             </Field>
             <Field label="Edition">
               <Input value={edition} onChange={(e) => setEdition(e.target.value)} />
@@ -297,12 +326,31 @@ function ManagePage() {
                 </SelectContent>
               </Select>
             </Field>
+            <Field label="RAC / cluster">
+              <div className="flex h-9 items-center gap-2">
+                <Switch checked={isRac} onCheckedChange={setIsRac} />
+                <span className="text-sm text-muted-foreground">
+                  {isRac ? "Running as RAC/cluster" : "Standalone"}
+                </span>
+              </div>
+            </Field>
+            {isRac ? (
+              <>
+                <Field label="Cluster name">
+                  <Input value={clusterName} onChange={(e) => setClusterName(e.target.value)} />
+                </Field>
+                <Field label="Node count">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={nodeCount}
+                    onChange={(e) => setNodeCount(e.target.value)}
+                  />
+                </Field>
+              </>
+            ) : null}
             <Field label="Start date">
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </Field>
             <Field label="Renewal date">
               <Input
@@ -329,7 +377,7 @@ function ManagePage() {
         </section>
 
         <section className="rounded-lg border bg-card p-5">
-          <h2 className="text-sm font-semibold">Update an Oracle version</h2>
+          <h2 className="text-sm font-semibold">Update a database version</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             The change is saved to the database record and to its version history.
           </p>
@@ -342,7 +390,7 @@ function ManagePage() {
                 <SelectContent>
                   {(dbs.data ?? []).map((d) => (
                     <SelectItem key={d.id} value={d.id}>
-                      {d.instance_name} — {d.oracle_version}
+                      {d.instance_name} — {d.db_version}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -392,6 +440,7 @@ function ManagePage() {
                   <SelectContent>
                     <SelectItem value="prod">prod</SelectItem>
                     <SelectItem value="uat">uat</SelectItem>
+                    <SelectItem value="sit">sit</SelectItem>
                     <SelectItem value="dev">dev</SelectItem>
                   </SelectContent>
                 </Select>

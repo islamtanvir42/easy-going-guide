@@ -71,7 +71,7 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("databases")
-        .select("id, instance_name, oracle_version")
+        .select("id, instance_name, db_version")
         .order("instance_name");
       if (error) throw error;
       return data ?? [];
@@ -120,9 +120,7 @@ function AdminPage() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
             <h1 className="text-lg font-semibold tracking-tight">Admin controls</h1>
-            <p className="text-xs text-muted-foreground">
-              Only administrators can open this page.
-            </p>
+            <p className="text-xs text-muted-foreground">Only administrators can open this page.</p>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/dashboard" className="text-sm text-primary hover:underline">
@@ -141,8 +139,8 @@ function AdminPage() {
           <div className="border-b p-4">
             <h2 className="text-sm font-semibold">People and permissions</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Members can add databases and update versions. Administrators can also approve
-              people and delete records.
+              Members can add databases and update versions. Administrators can also approve people
+              and delete records.
             </p>
           </div>
           <table className="w-full text-sm">
@@ -197,7 +195,7 @@ function AdminPage() {
               {(databases.data ?? []).map((d) => (
                 <tr key={d.id} className="border-t">
                   <td className="tech px-4 py-3 font-medium">{d.instance_name}</td>
-                  <td className="tech px-4 py-3 text-muted-foreground">{d.oracle_version}</td>
+                  <td className="tech px-4 py-3 text-muted-foreground">{d.db_version}</td>
                   <td className="px-4 py-3 text-right">
                     <Button
                       size="sm"

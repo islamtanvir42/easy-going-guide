@@ -13,16 +13,36 @@ export type Server = {
 
 export type Owner = { id: string; name: string; team: string | null };
 
+export type Platform = "oracle" | "mssql" | "postgresql";
+
+export const PLATFORM_LABELS: Record<Platform, string> = {
+  oracle: "Oracle",
+  mssql: "SQL Server",
+  postgresql: "PostgreSQL",
+};
+
+export function platformLabel(platform: string): string {
+  return PLATFORM_LABELS[platform as Platform] ?? platform;
+}
+
+export function versionLabel(platform: string, version: string): string {
+  return `${platformLabel(platform)} ${version}`;
+}
+
 export type DatabaseRow = {
   id: string;
   server_id: string;
   owner_id: string | null;
   instance_name: string;
   sid: string | null;
-  oracle_version: string;
+  platform: string;
+  db_version: string;
   edition: string | null;
   patch_level: string | null;
   status: string;
+  is_rac: boolean;
+  cluster_name: string | null;
+  node_count: number | null;
   start_date: string | null;
   renewal_date: string | null;
   expiry_date: string | null;
@@ -47,16 +67,24 @@ export type ScanLogRow = {
   notes: string | null;
 };
 
-/** Oracle major releases considered end-of-life / unsupported. */
-const EOL_MAJORS = ["11.", "12."];
+/** Per-platform release prefixes considered end-of-life / unsupported. */
+const EOL_PREFIXES: Record<Platform, string[]> = {
+  oracle: ["11.", "12."],
+  mssql: ["2012", "2014", "2016"],
+  postgresql: ["9.", "10", "11", "12"],
+};
 
-export function isEndOfLife(version: string) {
-  return EOL_MAJORS.some((major) => version.startsWith(major));
+export function isEndOfLife(platform: string, version: string) {
+  const prefixes = EOL_PREFIXES[platform as Platform] ?? [];
+  return prefixes.some((prefix) => version.startsWith(prefix));
 }
 
-export function majorVersionLabel(version: string) {
-  const [major] = version.split(".");
-  return `${major}c`;
+export function majorVersionLabel(platform: string, version: string) {
+  if (platform === "oracle") {
+    const major = version.split(".")[0] ?? version;
+    return major.endsWith("ai") ? major : `${major}c`;
+  }
+  return version;
 }
 
 export const SCAN_OVERDUE_DAYS = 7;

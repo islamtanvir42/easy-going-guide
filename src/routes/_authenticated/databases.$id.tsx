@@ -18,6 +18,7 @@ import {
   formatDate,
   formatDateTime,
   isEndOfLife,
+  platformLabel,
   usagePercent,
 } from "@/lib/inventory";
 import {
@@ -36,12 +37,12 @@ export const Route = createFileRoute("/_authenticated/databases/$id")({
       {
         name: "description",
         content:
-          "Instance metadata, Oracle version history and server scan history for a single tracked database.",
+          "Instance metadata, version history and server scan history for a single tracked database.",
       },
       { property: "og:title", content: "Database Detail — Database Inventory" },
       {
         property: "og:description",
-        content: "Instance metadata, version history timeline and scan history for one Oracle database.",
+        content: "Instance metadata, version history timeline and scan history for one database.",
       },
     ],
   }),
@@ -95,7 +96,7 @@ function DatabaseDetail() {
   }
 
   const row = db.data;
-  const eol = isEndOfLife(row.oracle_version);
+  const eol = isEndOfLife(row.platform, row.db_version);
   const metricRows = metrics.data ?? [];
   const current = metricRows[metricRows.length - 1] ?? null;
   const trend = metricRows.map((m) => ({
@@ -119,6 +120,13 @@ function DatabaseDetail() {
             <StatusBadge tone={row.status === "active" ? "success" : "neutral"}>
               {row.status}
             </StatusBadge>
+            <StatusBadge tone="neutral">{platformLabel(row.platform)}</StatusBadge>
+            {row.is_rac ? (
+              <StatusBadge tone="info">
+                {row.cluster_name ?? "RAC"}
+                {row.node_count ? ` · ${row.node_count} nodes` : ""}
+              </StatusBadge>
+            ) : null}
             {eol ? <StatusBadge tone="warning">End-of-life version</StatusBadge> : null}
           </div>
         </div>
@@ -129,16 +137,30 @@ function DatabaseDetail() {
           <h2 className="mb-4 text-sm font-semibold tracking-tight">Metadata</h2>
           <dl className="grid gap-4 sm:grid-cols-3">
             <Field label="SID" value={row.sid ?? "—"} mono />
+            <Field label="Platform" value={platformLabel(row.platform)} />
             <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                Oracle version
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Version</dt>
               <dd className={cn("tech mt-1 text-sm", eol && "font-medium text-warning")}>
-                {row.oracle_version}
+                {row.db_version}
               </dd>
             </div>
             <Field label="Edition" value={row.edition ?? "—"} />
             <Field label="Patch level" value={row.patch_level ?? "—"} mono />
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                RAC / Cluster
+              </dt>
+              <dd className="mt-1 text-sm">
+                {row.is_rac ? (
+                  <span className="tech">
+                    {row.cluster_name ?? "RAC"}
+                    {row.node_count ? ` · ${row.node_count} nodes` : ""}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Standalone</span>
+                )}
+              </dd>
+            </div>
             <div>
               <dt className="text-xs uppercase tracking-wide text-muted-foreground">Environment</dt>
               <dd className="mt-1">
@@ -149,9 +171,7 @@ function DatabaseDetail() {
             </div>
             <Field
               label="Owner"
-              value={
-                row.owners ? `${row.owners.name} · ${row.owners.team ?? "—"}` : "Unassigned"
-              }
+              value={row.owners ? `${row.owners.name} · ${row.owners.team ?? "—"}` : "Unassigned"}
             />
             <Field label="IP address" value={row.servers?.ip_address ?? "—"} mono />
             <Field label="Operating system" value={row.servers?.os_version ?? "—"} mono />
@@ -287,7 +307,9 @@ function DatabaseDetail() {
                   <p className="tech text-sm">
                     <span className="text-muted-foreground">{h.old_version ?? "—"}</span>
                     <span className="mx-2 text-muted-foreground">→</span>
-                    <span className={cn(isEndOfLife(h.new_version) && "text-warning")}>
+                    <span
+                      className={cn(isEndOfLife(row.platform, h.new_version) && "text-warning")}
+                    >
                       {h.new_version}
                     </span>
                   </p>
@@ -329,7 +351,9 @@ function DatabaseDetail() {
                       </td>
                       <td className="py-2.5 pr-4 text-muted-foreground">{s.description ?? "—"}</td>
                       <td className="tech py-2.5 pr-4 text-right">{s.table_count}</td>
-                      <td className="tech py-2.5 pr-4 text-right">{Number(s.size_gb).toFixed(1)}</td>
+                      <td className="tech py-2.5 pr-4 text-right">
+                        {Number(s.size_gb).toFixed(1)}
+                      </td>
                       <td className="py-2.5 text-muted-foreground">
                         {s.last_analyzed ? formatDate(s.last_analyzed) : "—"}
                       </td>
@@ -342,7 +366,6 @@ function DatabaseDetail() {
             <p className="text-sm text-muted-foreground">No datasets recorded for this database.</p>
           )}
         </section>
-
 
         <section className="rounded-lg border bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold tracking-tight">

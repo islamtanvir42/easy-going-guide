@@ -63,14 +63,18 @@ export type Database = {
       }
       databases: {
         Row: {
+          cluster_name: string | null
           created_at: string
+          db_version: string
           edition: string | null
           expiry_date: string | null
           id: string
           instance_name: string
-          oracle_version: string
+          is_rac: boolean
+          node_count: number | null
           owner_id: string | null
           patch_level: string | null
+          platform: string
           renewal_date: string | null
           server_id: string
           sid: string | null
@@ -79,14 +83,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cluster_name?: string | null
           created_at?: string
+          db_version: string
           edition?: string | null
           expiry_date?: string | null
           id?: string
           instance_name: string
-          oracle_version: string
+          is_rac?: boolean
+          node_count?: number | null
           owner_id?: string | null
           patch_level?: string | null
+          platform?: string
           renewal_date?: string | null
           server_id: string
           sid?: string | null
@@ -95,14 +103,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cluster_name?: string | null
           created_at?: string
+          db_version?: string
           edition?: string | null
           expiry_date?: string | null
           id?: string
           instance_name?: string
-          oracle_version?: string
+          is_rac?: boolean
+          node_count?: number | null
           owner_id?: string | null
           patch_level?: string | null
+          platform?: string
           renewal_date?: string | null
           server_id?: string
           sid?: string | null
