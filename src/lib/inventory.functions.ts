@@ -11,11 +11,23 @@ import type {
 } from "./inventory";
 
 async function rest<T>(path: string): Promise<T> {
-  const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
+  // Prefer the Vite build-time value (always present, since it's inlined from
+  // the committed .env at build) and fall back to a platform-configured
+  // runtime env var for deployments that only set process.env.
+  const url =
+    import.meta.env["VITE_SUPABASE_URL"] ||
+    process.env["SUPABASE_URL"] ||
+    process.env["VITE_SUPABASE_URL"];
   const key =
-    process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ||
     process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
-  if (!url || !key) throw new Error("Backend is not configured");
+  if (!url || !key) {
+    const missing = [!url && "SUPABASE_URL", !key && "SUPABASE_PUBLISHABLE_KEY"]
+      .filter(Boolean)
+      .join(", ");
+    throw new Error(`Backend is not configured (missing ${missing})`);
+  }
 
   const res = await fetch(`${url}/rest/v1/${path}`, {
     headers: { apikey: key, Accept: "application/json" },
