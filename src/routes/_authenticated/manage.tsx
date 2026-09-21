@@ -88,6 +88,8 @@ function ManagePage() {
     },
   });
 
+  const loadError = servers.error ?? owners.error ?? dbs.error;
+
   // ---- add database form state
   const [instanceName, setInstanceName] = useState("");
   const [sid, setSid] = useState("");
@@ -264,6 +266,12 @@ function ManagePage() {
         {error && (
           <p className="rounded-md border border-destructive/40 px-4 py-2 text-sm text-destructive">
             {error}
+          </p>
+        )}
+        {loadError && (
+          <p className="rounded-md border border-destructive/40 px-4 py-2 text-sm text-destructive">
+            Couldn't load the inventory: {loadError.message}. The database schema on this
+            environment may be out of date — dropdowns below will stay empty until it's fixed.
           </p>
         )}
 
