@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { UserMenu } from "@/components/inventory/UserMenu";
 import { BarPanel } from "@/components/inventory/BarPanel";
 import { StatusBadge, environmentTone } from "@/components/inventory/StatusBadge";
-import ucbLogo from "@/assets/ucb-full-logo-transparent.png";
+import ucbLogo from "@/assets/ucb-logo.png";
 import { Input } from "@/components/ui/input";
 import {
   Select,
