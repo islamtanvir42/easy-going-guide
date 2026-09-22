@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { UserMenu } from "@/components/inventory/UserMenu";
 import { BarPanel } from "@/components/inventory/BarPanel";
 import { StatusBadge, environmentTone } from "@/components/inventory/StatusBadge";
-import ucbLogoAsset from "@/assets/ucb-logo.png.asset.json";
+import ucbLogo from "@/assets/ucb-full-logo-transparent.png";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -223,11 +223,7 @@ function Overview() {
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div className="flex min-w-0 items-center gap-4">
-            <img
-              src={ucbLogoAsset.url}
-              alt="UCB"
-              className="h-auto w-20 shrink-0 object-contain sm:w-24"
-            />
+            <img src={ucbLogo} alt="UCB" className="h-auto w-20 shrink-0 object-contain sm:w-24" />
             <div className="min-w-0">
               <h1 className="text-lg font-semibold tracking-tight">
                 Database Inventory — Multi-Platform Estate Overview
